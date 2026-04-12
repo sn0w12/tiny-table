@@ -64,12 +64,15 @@ fn main() {
 ### Styled
 
 ```rust
-use tiny_table::{Align, Cell, Column, SectionStyle, Table, Trunc};
+use tiny_table::{Align, Cell, Column, ColumnWidth, SectionStyle, Table, Trunc};
 
 fn main() {
     let mut table = Table::with_columns(vec![
-        Column::new("Name").bright_cyan().bold().width(0.3),
-        Column::new("Role").width(0.4).truncate(Trunc::Middle),
+        Column::new("Name")
+            .bright_cyan()
+            .bold()
+            .width(ColumnWidth::fill()),
+        Column::new("Role").width(0.5).truncate(Trunc::Middle),
         Column::new("Status").bright_yellow().bold().width(0.3),
     ])
     .with_section_style(SectionStyle {
@@ -103,13 +106,13 @@ fn main() {
 ```
 
 ```
-┌────────────────┬────────────────────┬───────────────┐
-│ Name           │ Role               │ Status        │
-╞════════════════╪══════ Team ════════╪═══════════════╡
-│ Ada Lovelace   │ Principal Engineer │ Active        │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ Bob            │ Support            │ Away          │
-└────────────────┴────────────────────┴───────────────┘
+┌────────────┬────────────────────────┬───────────────┐
+│ Name       │ Role                   │ Status        │
+╞════════════╪══════════ Team ════════╪═══════════════╡
+│ Ada Lovel… │ Principal Engineer     │ Active        │
+├╌╌╌╌╌╌╌╌╌╌╌╌│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ Bob        │ Support                │ Away          │
+└────────────┴────────────────────────┴───────────────┘
 ```
 
 ## Feature Flags

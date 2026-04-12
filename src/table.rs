@@ -174,8 +174,9 @@ pub enum Align {
 /// Width policy for a table column.
 ///
 /// `Auto` keeps the column at content width unless a column-specific width is
-/// applied. `Fixed` uses an exact terminal-cell width. `Fraction` divides the
-/// remaining terminal width proportionally across all fractional columns.
+/// applied. `Fixed` uses an exact terminal-cell width. `Fraction` claims a
+/// proportional share of the available width. `Fill` consumes whatever width
+/// remains after fixed, content-based, and fractional columns are resolved.
 ///
 /// # Examples
 ///
@@ -196,6 +197,8 @@ pub enum ColumnWidth {
     Fixed(usize),
     /// Allocate a fraction of the remaining available width.
     Fraction(f64),
+    /// Fill the remaining available width.
+    Fill,
 }
 
 impl ColumnWidth {
@@ -207,6 +210,11 @@ impl ColumnWidth {
     /// Create a fractional-width column.
     pub fn fraction(fraction: f64) -> Self {
         Self::Fraction(fraction)
+    }
+
+    /// Create a column that takes the remaining available width.
+    pub fn fill() -> Self {
+        Self::Fill
     }
 }
 
@@ -764,6 +772,7 @@ impl Table {
     ) -> Vec<usize> {
         let mut widths = content_widths.to_vec();
         let mut fraction_columns = Vec::new();
+        let mut fill_columns = Vec::new();
         let mut reserved_width = 0usize;
 
         for (col, style) in column_styles.iter().enumerate() {
@@ -778,6 +787,9 @@ impl Table {
                 ColumnWidth::Fraction(fraction) => {
                     fraction_columns.push((col, fraction.max(0.0)));
                 }
+                ColumnWidth::Fill => {
+                    fill_columns.push(col);
+                }
             }
         }
 
@@ -789,40 +801,68 @@ impl Table {
         let available_content_width = terminal_width.saturating_sub(table_overhead);
         let remaining_width = available_content_width.saturating_sub(reserved_width);
 
-        if fraction_columns.is_empty() {
+        if fraction_columns.is_empty() && fill_columns.is_empty() {
             return widths;
         }
 
-        let total_fraction: f64 = fraction_columns.iter().map(|(_, fraction)| *fraction).sum();
-        if total_fraction <= f64::EPSILON {
-            for (col, _) in fraction_columns {
-                widths[col] = 0;
-            }
+        let mut leftover = remaining_width;
 
-            return widths;
+        if !fraction_columns.is_empty() {
+            let total_fraction: f64 = fraction_columns.iter().map(|(_, fraction)| *fraction).sum();
+            if total_fraction <= f64::EPSILON {
+                for (col, _) in fraction_columns {
+                    widths[col] = 0;
+                }
+            } else {
+                let fraction_budget = if total_fraction <= 1.0 {
+                    remaining_width
+                } else {
+                    remaining_width
+                };
+
+                let mut remainders = Vec::with_capacity(fraction_columns.len());
+                let mut assigned = 0usize;
+
+                for (col, fraction) in fraction_columns {
+                    let exact = if total_fraction <= 1.0 {
+                        (fraction_budget as f64) * fraction
+                    } else {
+                        (fraction_budget as f64) * fraction / total_fraction
+                    };
+                    let width = exact.floor() as usize;
+                    widths[col] = width;
+                    assigned += width;
+                    remainders.push((col, exact - width as f64));
+                }
+
+                leftover = leftover.saturating_sub(assigned);
+
+                if fill_columns.is_empty() {
+                    remainders.sort_by(|left, right| {
+                        right.1.partial_cmp(&left.1).unwrap_or(Ordering::Equal)
+                    });
+
+                    for (col, _) in remainders {
+                        if leftover == 0 {
+                            break;
+                        }
+
+                        widths[col] += 1;
+                        leftover -= 1;
+                    }
+                }
+            }
         }
 
-        let mut remainders = Vec::with_capacity(fraction_columns.len());
-        let mut assigned = 0usize;
+        if !fill_columns.is_empty() {
+            let fill_count = fill_columns.len();
+            let fill_width = leftover / fill_count;
+            let mut fill_remainder = leftover % fill_count;
 
-        for (col, fraction) in fraction_columns {
-            let exact = (remaining_width as f64) * fraction / total_fraction;
-            let width = exact.floor() as usize;
-            widths[col] = width;
-            assigned += width;
-            remainders.push((col, exact - width as f64));
-        }
-
-        let mut leftover = remaining_width.saturating_sub(assigned);
-        remainders.sort_by(|left, right| right.1.partial_cmp(&left.1).unwrap_or(Ordering::Equal));
-
-        for (col, _) in remainders {
-            if leftover == 0 {
-                break;
+            for col in fill_columns {
+                widths[col] = fill_width + usize::from(fill_remainder > 0);
+                fill_remainder = fill_remainder.saturating_sub(1);
             }
-
-            widths[col] += 1;
-            leftover -= 1;
         }
 
         widths
@@ -1324,6 +1364,41 @@ mod tests {
         assert!(plain[1].contains("Age"));
         assert!(plain[1].contains("City"));
         assert!(plain[3].contains("Alice"));
+    }
+
+    #[test]
+    fn fill_columns_take_the_remainder_after_fractional_columns() {
+        let mut table = Table::with_columns(vec![
+            Column::new("Name").width(ColumnWidth::fill()),
+            Column::new("Role").width(0.6),
+            Column::new("Status").width(0.3),
+        ]);
+
+        table.add_row(vec![
+            Cell::new("Ada Lovelace"),
+            Cell::new("Principal Engineer"),
+            Cell::new("Active"),
+        ]);
+
+        let plain = table
+            .render_lines_for_test(Some(70))
+            .into_iter()
+            .map(|line| strip_ansi(&line))
+            .collect::<Vec<_>>();
+
+        assert_eq!(plain[0].chars().count(), 70);
+        assert_eq!(cell_widths(&plain[1]), vec![6, 36, 18]);
+        assert_eq!(cell_widths(&plain[3]), vec![6, 36, 18]);
+        assert!(plain[1].contains("Name"));
+        assert!(plain[1].contains("Role"));
+        assert!(plain[1].contains("Status"));
+    }
+
+    fn cell_widths(line: &str) -> Vec<usize> {
+        line.split('│')
+            .filter(|segment| !segment.is_empty())
+            .map(|segment| segment.chars().count().saturating_sub(2))
+            .collect()
     }
 
     #[test]
