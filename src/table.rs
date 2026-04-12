@@ -814,11 +814,7 @@ impl Table {
                     widths[col] = 0;
                 }
             } else {
-                let fraction_budget = if total_fraction <= 1.0 {
-                    remaining_width
-                } else {
-                    remaining_width
-                };
+                let fraction_budget = remaining_width;
 
                 let mut remainders = Vec::with_capacity(fraction_columns.len());
                 let mut assigned = 0usize;
