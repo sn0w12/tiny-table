@@ -10,7 +10,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use simple_table::{Cell, Column, Align, Table, Trunc};
+//! use tiny_table::{Cell, Column, Align, Table, Trunc};
 //!
 //! let mut table = Table::with_columns(vec![
 //!     Column::new("Name").width(0.30),

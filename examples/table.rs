@@ -1,4 +1,4 @@
-use simple_table::{Align, Cell, Column, SectionStyle, Table, Trunc};
+use tiny_table::{Align, Cell, Column, SectionStyle, Table, Trunc};
 
 fn main() {
     let header_style = SectionStyle {

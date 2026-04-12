@@ -1,11 +1,11 @@
 [package]
-name = "simple-table"
+name = "tiny-table"
 version = "0.1.0"
 edition = "2024"
 description = "A simple and customizable table library for Rust."
 license = "MIT"
-repository = "https://github.com/sn0w12/simple-table"
-homepage = "https://github.com/sn0w12/simple-table"
+repository = "https://github.com/sn0w12/tiny-table"
+homepage = "https://github.com/sn0w12/tiny-table"
 keywords = ["table", "terminal"]
 
 [features]
@@ -13,7 +13,7 @@ default = ["style"]
 style = []
 
 [lib]
-name = "simple_table"
+name = "tiny_table"
 
 [dependencies]
 terminal_size = "0.4.4"

@@ -131,7 +131,7 @@ impl SectionStyle {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::{Cell, Trunc};
+/// use tiny_table::{Cell, Trunc};
 ///
 /// let cell = Cell::new("abcdefghij").truncate(Trunc::Middle);
 /// ```
@@ -154,7 +154,7 @@ pub enum Trunc {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::{Align, Table};
+/// use tiny_table::{Align, Table};
 ///
 /// let mut table = Table::new();
 /// table.add_section("Team").align(Align::Right);
@@ -180,7 +180,7 @@ pub enum Align {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::ColumnWidth;
+/// use tiny_table::ColumnWidth;
 ///
 /// let fixed = ColumnWidth::fixed(12);
 /// let fraction = ColumnWidth::fraction(0.5);
@@ -244,7 +244,7 @@ impl From<f64> for ColumnWidth {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::ColumnTarget;
+/// use tiny_table::ColumnTarget;
 ///
 /// assert_eq!(ColumnTarget::from(0usize), ColumnTarget::Index(0));
 /// assert_eq!(ColumnTarget::from("Name"), ColumnTarget::Header("Name".to_string()));
@@ -283,7 +283,7 @@ impl From<String> for ColumnTarget {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::{Column, Color, Trunc};
+/// use tiny_table::{Column, Color, Trunc};
 ///
 /// let column = Column::new("Status")
 ///     .color(Color::BrightGreen)
@@ -371,7 +371,7 @@ impl ColumnStyle {
 /// # Examples
 ///
 /// ```rust
-/// use simple_table::{Cell, Color, Trunc};
+/// use tiny_table::{Cell, Color, Trunc};
 ///
 /// let cell = Cell::new("warning")
 ///     .color(Color::BrightRed)
@@ -483,7 +483,7 @@ impl From<String> for Cell {
 /// # Example
 ///
 /// ```rust
-/// use simple_table::{Cell, Column, Align, Table, Trunc};
+/// use tiny_table::{Cell, Column, Align, Table, Trunc};
 ///
 /// let mut table = Table::with_columns(vec![
 ///     Column::new("Name").width(0.35),
