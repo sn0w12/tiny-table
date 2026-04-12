@@ -1,0 +1,23 @@
+[package]
+name = "simple-table"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+keywords = ["table", "terminal"]
+
+[features]
+default = ["style"]
+style = []
+
+[lib]
+name = "simple_table"
+
+[dependencies]
+terminal_size = "0.4.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+strip = true
+codegen-units = 1
