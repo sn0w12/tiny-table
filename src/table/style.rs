@@ -2,22 +2,56 @@ use crate::color::Color;
 
 use super::ANSI_RESET;
 
+/// A styling action to apply to text (color, formatting, etc.).
+///
+/// These actions are accumulated in cells and columns, and applied when rendering.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum StyleAction {
+pub enum StyleAction {
+    /// Set the foreground color.
     Color(Color),
+    /// Set the background color.
     OnColor(Color),
+    /// Clear all formatting.
     Clear,
+    /// Reset formatting back to normal.
     Normal,
+    /// Make the text bold.
     Bold,
+    /// Make the text dimmed.
     Dimmed,
+    /// Make the text italic.
     Italic,
+    /// Underline the text.
     Underline,
+    /// Blink the text.
     Blink,
+    /// Reverse foreground and background colors.
     Reversed,
+    /// Hide the text.
     Hidden,
+    /// Strike the text through.
     Strikethrough,
 }
 
+/// Macro to implement styling methods on a type.
+///
+/// This macro generates all the styling methods (color, bold, italic, etc.) for a given type.
+/// The type must have a way to accumulate [`StyleAction`]s.
+///
+/// # Parameters
+///
+/// - `$ty`: The type to implement styling methods for.
+/// - `$push`: A closure that takes the type and a `StyleAction`, and returns the modified type.
+///
+/// # Example
+///
+/// ```ignore
+/// impl_style_methods!(Cell, |mut cell: Cell, action| {
+///     cell.styles.push(action);
+///     cell
+/// });
+/// ```
+#[macro_export]
 macro_rules! impl_style_methods {
     ($ty:ty, $push:expr) => {
         impl $ty {
@@ -350,9 +384,20 @@ macro_rules! impl_style_methods {
     };
 }
 
-pub(super) use impl_style_methods;
-
-pub(super) fn apply_style_actions(content: &str, actions: &[StyleAction]) -> String {
+/// Apply a sequence of style actions to content, wrapping it in ANSI escape codes.
+///
+/// If the content or actions are empty, the content is returned unchanged.
+/// Otherwise, the content is wrapped with the appropriate ANSI codes and a reset sequence.
+///
+/// # Arguments
+///
+/// - `content`: The text to style.
+/// - `actions`: The styling actions to apply.
+///
+/// # Returns
+///
+/// The styled content with ANSI escape codes, or the original content if no styling is needed.
+pub fn apply_style_actions(content: &str, actions: &[StyleAction]) -> String {
     if content.is_empty() || actions.is_empty() {
         return content.to_string();
     }

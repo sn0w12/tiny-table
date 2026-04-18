@@ -19,12 +19,15 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use terminal_size::{Width, terminal_size};
 
+/// Style actions and macros for applying colors and formatting to cells and columns.
 #[cfg(feature = "style")]
-mod style;
+pub mod style;
 mod text;
 
 #[cfg(feature = "style")]
-use style::{StyleAction, apply_style_actions, impl_style_methods};
+pub use crate::impl_style_methods;
+#[cfg(feature = "style")]
+use style::{StyleAction, apply_style_actions};
 use text::{layout_line, split_lines, strip_ansi, truncate_line, visible_len};
 
 const ANSI_RESET: &str = "\x1b[0m";
