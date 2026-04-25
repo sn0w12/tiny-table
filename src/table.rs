@@ -83,6 +83,37 @@ impl TableStyle {
         }
     }
 
+    /// Parse a table from a string representation, returning `None` if the string is not a valid table style.
+    ///
+    /// ```
+    /// use tiny_table::TableStyle;
+    ///
+    /// let style_str = "┌┐└┘─│┬├┤┼┴";
+    /// let table_style = TableStyle::from_string(style_str).unwrap();
+    /// let unicode_style = TableStyle::unicode();
+    /// assert_eq!(table_style, unicode_style);
+    /// ```
+    pub fn from_string(s: &str) -> Option<Self> {
+        let chars: Vec<char> = s.chars().collect();
+        if chars.len() != 11 {
+            return None;
+        }
+
+        Some(TableStyle {
+            top_left: leak_char(chars[0]),
+            top_right: leak_char(chars[1]),
+            bottom_left: leak_char(chars[2]),
+            bottom_right: leak_char(chars[3]),
+            horiz: leak_char(chars[4]),
+            vert: leak_char(chars[5]),
+            top_joint: leak_char(chars[6]),
+            mid_left: leak_char(chars[7]),
+            mid_right: leak_char(chars[8]),
+            mid_joint: leak_char(chars[9]),
+            bottom_joint: leak_char(chars[10]),
+        })
+    }
+
     /// Convert a [`SectionStyle`] into a [`TableStyle`] by filling in the missing fields
     pub fn from_section_style(section_style: SectionStyle) -> Self {
         TableStyle {
@@ -123,6 +154,34 @@ impl SectionStyle {
             mid_joint: table_style.mid_joint,
         }
     }
+
+    /// Parse a section style from a string representation, returning `None` if the string is not a valid section style.
+    ///
+    /// ```
+    /// use tiny_table::SectionStyle;
+    ///
+    /// let style_str = "─├┤┼";
+    /// let section_style = SectionStyle::from_string(style_str).unwrap();
+    /// let unicode_style = SectionStyle::unicode();
+    /// assert_eq!(section_style, unicode_style);
+    /// ```
+    pub fn from_string(s: &str) -> Option<Self> {
+        let chars: Vec<char> = s.chars().collect();
+        if chars.len() != 4 {
+            return None;
+        }
+
+        Some(SectionStyle {
+            horiz: leak_char(chars[0]),
+            mid_left: leak_char(chars[1]),
+            mid_right: leak_char(chars[2]),
+            mid_joint: leak_char(chars[3]),
+        })
+    }
+}
+
+fn leak_char(ch: char) -> &'static str {
+    Box::leak(ch.to_string().into_boxed_str())
 }
 
 /// How to handle content that does not fit inside the available column width.
