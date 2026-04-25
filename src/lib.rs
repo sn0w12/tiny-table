@@ -53,8 +53,6 @@ pub mod table;
 /// A convenience type for specifying truecolor values by RGB components.
 #[cfg(feature = "style")]
 pub use color::CustomColor;
-#[cfg(feature = "style")]
-pub use table::style::{StyleAction, apply_style_actions};
 /// Alignment options for section labels.
 pub use table::Align;
 /// A table cell containing content and optional styling overrides.
@@ -76,3 +74,5 @@ pub use table::Table;
 pub use table::TableStyle;
 /// Truncation modes for cell content.
 pub use table::Trunc;
+#[cfg(feature = "style")]
+pub use table::style::{StyleAction, apply_style_actions};
